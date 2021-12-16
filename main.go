@@ -16,7 +16,9 @@ Includes methods for comparing and adding two BigInt values.
 TODO:
  Support for negative values
  Safety when creating BigInt
-
+ Division by BigInt (Simple, non-efficent method)
+	Call subtraction repeatedly breaking before it become negative.
+	The number of iterations is the quotient and the remaining number is the remainder.
 */
 type BigInt struct {
 	value string
