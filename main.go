@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
 
-/***
+/*
+
 An implementation of BigInt using Go.
 This structure stores large integers as strings essentially an array of digits 0 to 9 representing the larger value.
 Includes methods for comparing and adding two BigInt values.
+
 TODO:
- Division by Int
- Factorials
- Division by BigInt
  Support for negative values
  Safety when creating BigInt
+
 */
 type BigInt struct {
 	value string
@@ -153,7 +154,7 @@ func (b *BigInt) subtract(subtrahend *BigInt) {
 		overflow := 0
 		// sb holds the final value
 		var sb strings.Builder
-		// Work from right to left along the subtrahend (x)
+		// work from right to left along the subtrahend (x)
 		for i := len(x)-1; i >= 0; i-- {
 			// Get values of subtrahend and minuend
 			xInt := int(x[i] - '0')
@@ -172,7 +173,7 @@ func (b *BigInt) subtract(subtrahend *BigInt) {
 			fmt.Fprintf(&sb, "%d", yInt - xInt)
 		}
 	
-		// Remove any trailing zeroes, before reversing, the come as a result of borrowing
+		// Remove any trailing zeroes, before reversing, they come as a result of borrowing
 		solution := sb.String()
 		for solution[len(solution)-1] == '0' {
 			solution = solution[0:len(solution)-1]
@@ -224,6 +225,45 @@ func multiplyByIntHelper(x int, number string, powerOf10 int, overflow int, sb *
 	return multiplyByIntHelper(x, number[0:len(number)-1], powerOf10, newOverflow, sb)
 }
 
+// divideByInt will divide a BigInt by an integer value
+// will lose precision because of integer division
+func (b *BigInt) divideByInt(divisor int) {
+	// cannot divide by zero
+	if (divisor == 0) {
+		log.Fatal("cannot divide by zero")
+	} else {
+		// sb is the quotient
+		var sb strings.Builder
+		dividend := b.getValue()
+		overflow := 0
+		// work from left to right along the dividend
+		for i:= 0; i < len(dividend); i++ {
+			// digit is the number to be divided
+			// add any overflow from the previous division
+			digit := overflow * 10 + int(dividend[i] - '0')
+			// add the divided digit to the quotient
+			fmt.Fprintf(&sb, "%d", digit/divisor)
+			// overflow is the remainder from the division and used in the next division
+			overflow = digit % divisor
+		}
+
+		// Remove any leading zeroes resulting from carrying
+	 	solution := sb.String()
+		for solution[0] == '0' {
+			solution = solution[1:]
+		}
+
+		b.setValue(solution)
+	}
+}
+
+// factorial will return a BigInt factorial of an integer
+func (b *BigInt) factorial(n int) {
+	if (n > 1) {
+		bigN := newBigInt()
+	}
+}
+
 func main() {
 
 	num := newBigInt("666666666666666666634555555553466")
@@ -235,14 +275,16 @@ func main() {
 	num3 := newBigInt("11111111846846863575110")
 	num4 := newBigInt("760849132368409")
 
-
 	num3.multiply(num4)
 	fmt.Println(num3.value)
 
 	num5 := newBigInt("1000000")
 	num6 := newBigInt("250000")
 	num5.subtract(num6)
-
 	fmt.Println(num5.value)
+
+	num7 := newBigInt("123456789")
+	num7.divideByInt(17)
+	fmt.Println(num7.value)
 
 }
