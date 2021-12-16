@@ -259,12 +259,62 @@ func (b *BigInt) divideByInt(divisor int) {
 	}
 }
 
-// factorial will return a BigInt factorial of an integer
-func (b *BigInt) factorial(n int) {
-	if (n > 1) {
-		bigN := newBigInt()
-	}
-}
+/**************************
+
+BigNumber div(BigNumber other) {
+            String result = "";
+            String num1 = this.Number;
+            String num2 = other.Number;
+            int Select = num2.length();
+            String temp = num1.substring(0, Select);
+            BigNumber tempNum = new BigNumber(temp);
+            int NumbersLeft = num1.length() - temp.length();
+            BigNumber MultObject = new BigNumber("1");
+            if (tempNum.compareTo(other) < 0) {
+                temp = num1.substring(0, Select+1);
+                tempNum.Number = temp;
+                NumbersLeft--;
+                Select++;
+            }
+            do {
+                MultObject.Number = "0";
+                int Index = 0;
+                while (other.mult(MultObject).compareTo(tempNum) < 0) {
+                    Index++;
+                    MultObject.Number = Integer.toString(Index);
+                }
+                Index--;
+                MultObject.Number = Integer.toString(Index);
+                String Carry = tempNum.sub(other.mult(MultObject)).Number;
+                if (NumbersLeft > 0) {
+                    Select++;
+                    Carry += num1.charAt(Select - 1);
+                    NumbersLeft--;
+                }
+                result += Index;
+                tempNum.Number = Carry;
+            }while (NumbersLeft > 0);
+            MultObject.Number = "0";
+            int Index = 0;
+            while (other.mult(MultObject).compareTo(tempNum) < 0) {
+                Index++;
+                MultObject.Number = Integer.toString(Index);
+            }
+            Index--;
+            MultObject.Number = Integer.toString(Index);
+            String Carry = tempNum.sub(other.mult(MultObject)).Number;
+            if (NumbersLeft > 0) {
+                Select++;
+                Carry += num1.charAt(Select - 1);
+                NumbersLeft--;
+            }
+            result += Index;
+            tempNum.Number = Carry;
+                BigNumber Big = new BigNumber(result);
+                return Big;
+            }
+
+*/
 
 func main() {
 
