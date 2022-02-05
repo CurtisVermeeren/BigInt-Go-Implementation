@@ -20,6 +20,11 @@ B   			X
 1000	+	900			B is larger. Add both values. Result is positive
 -1000	+	-900		B is larger. Add both values. Result is negative
 -1000	+	900			B is larger. Subtract X from B. Result is negative
+
+1000 	+ 	1000		B and X are the same. Add both values. Result is positive
+1000 	+ 	-1000	    B and X are the same. Return 0
+-1000 	+	1000		B and X are the saem. Return 0
+-1000	+ 	-1000		B and X are the same. Add both values. Result is negative
 */
 
 /* SUBTRACTION CASES
@@ -34,6 +39,11 @@ B   			X
 1000	-	900			B is larger. Subtract X from B. Result is positive
 -1000	-	-900		B is larger. Subtract X from B. Result is negative
 -1000	-	900			B is larger. Add both values. Result is negative
+
+1000 	- 	1000		B and X are the same. Return 0
+1000 	- 	-1000	    B and X are the same. Add both values. Result is positive
+-1000 	-	1000		B and X are the saem. Add both values. Result is negative
+-1000	- 	-1000		B and X are the same. Return 0
 
 /*
 An implementation of BigInt using Go.
@@ -61,7 +71,7 @@ func newBigInt(v string) (*BigInt, error) {
 		newV := v[1:]
 
 		// check string is all digits
-		if !checkDigits(v) {
+		if !checkDigits(newV) {
 			return nil, errors.New("not a valid big int string")
 		}
 
@@ -76,6 +86,15 @@ func newBigInt(v string) (*BigInt, error) {
 
 	b := &BigInt{value: v, negative: false}
 	return b, nil
+}
+
+// ToString returns a string of the BigInt value
+// appends a minus sign for negative values
+func (b *BigInt) ToString() string{
+	if b.negative {
+		return fmt.Sprintf("-%s", b.value)
+	} 
+	return b.value
 }
 
 // checkDigits returns true if all values in a string are between 0 and 9
@@ -278,13 +297,177 @@ func (b *BigInt) adder(addend *BigInt) {
 
 // adds one BigInt value with another
 func (b *BigInt) Add(x *BigInt)  {
-	
+
+	// b is smaller
+	if b.compareValues(x) == -1 {
+		// b is positive x is negative
+		if !b.negative && x.negative {
+			xValue := x.value
+			x.subtractor(b) 
+			b.value = x.value
+			b.negative = true
+			x.value = xValue
+			return
+		}
+
+		// b is positive x is positive
+		if !b.negative && !x.negative {
+			b.adder(x)
+			b.negative = false
+			return
+		}
+
+		// b is negative x is negative
+		if b.negative && x.negative {
+			b.adder(x)
+			b.negative = true
+			return
+		}
+
+		// b is negative x is positive
+		if b.negative && !x.negative {
+			xValue := x.value
+			x.subtractor(b)
+			b.value = x.value
+			b.negative = true
+			x.value = xValue
+			return
+		}
+	}
+
+	// b is larger
+	if b.compareValues(x) == 1 {
+		// b is positive x is negative
+		if !b.negative && x.negative {
+			b.subtractor(x)
+			b.negative = false
+			return 
+		}
+
+		// b is positive x is positive
+		if !b.negative && !x.negative {
+			b.adder(x)
+			b.negative = false
+			return 
+		}
+
+		// b is negative x is negative
+		if b.negative && x.negative {
+			b.adder(x)
+			b.negative = true
+			return 
+		}
+
+		// b is negative x is positive
+		if b.negative && !x.negative {
+			b.subtractor(x)
+			b.negative = true
+			return
+		}
+	}
+
+	// b and x are equal
+	if b.compareValues(x) == 0 {
+		// b is positive x is positive
+		if !b.negative && !x.negative {
+			b.adder(x)
+			b.negative = false
+			return
+		}
+
+		// b is positive x is negative
+		if !b.negative && x.negative {
+			b.value = "0"
+			b.negative = false
+			return
+		}
+
+		// b is negative x is positive
+		if b.negative && !x.negative {
+			b.value = "0"
+			b.negative = false
+			return
+		}
+
+		// b is negative x is negative
+		if b.negative && x.negative {
+			b.adder(x)
+			b.negative = true
+		}
+	}
 }
 
 
 // subtract one BigInt from another
 func (b *BigInt) Subtract(x *BigInt)  {
-	
+	// b is smaller
+	if b.compareValues(x) == -1 {
+		// b is positive x is negative
+		if !b.negative && x.negative {
+
+		}
+
+		// b is positive x is positive
+		if !b.negative && !x.negative {
+
+		}
+
+		// b is negative x is negative
+		if b.negative && x.negative {
+
+		}
+
+		// b is negative x is positive
+		if b.negative && !x.negative {
+
+		}
+	}
+
+	// b is larger
+	if b.compareValues(x) == 1 {
+		// b is positive x is negative
+		if !b.negative && x.negative {
+
+		}
+
+		// b is positive x is positive
+		if !b.negative && !x.negative {
+
+		}
+
+		// b is negative x is negative
+		if b.negative && x.negative {
+
+		}
+
+		// b is negative x is positive
+		if b.negative && !x.negative {
+			
+		}
+	}
+
+	// b and x are equal
+	if b.compareValues(x) == 0 {
+		// b is positive x is positive
+		if !b.negative && !x.negative {
+
+		}
+
+		// b is positive x is negative
+		if !b.negative && x.negative {
+
+		}
+
+		// b is negative x is positive
+		if b.negative && !x.negative {
+
+		}
+
+		// b is negative x is negative
+		if b.negative && x.negative {
+			
+		}
+	}
 }
 
 
@@ -468,6 +651,20 @@ BigNumber div(BigNumber other) {
 
 func main() {
 
+	num1, _ := newBigInt("0")
+	num2, _ := newBigInt("-932423400")
+	
 
+	num3, _ := newBigInt("10003")
+	num4, _ := newBigInt("-1000")
+
+
+	num3.Add(num4)
+	fmt.Println(num3.ToString())
+
+	num1.Add(num2)
+	fmt.Println(num1.ToString())
+
+	
 
 }
