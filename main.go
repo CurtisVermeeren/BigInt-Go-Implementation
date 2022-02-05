@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"errors"
 )
 
 /*
@@ -14,8 +15,6 @@ This structure stores large integers as strings essentially an array of digits 0
 Includes methods for comparing and adding two BigInt values.
 
 TODO:
- Support for negative values
- Safety when creating BigInt
  Division by BigInt (Simple, non-efficent method)
 	Call subtraction repeatedly breaking before it become negative.
 	The number of iterations is the quotient and the remaining number is the remainder.
@@ -25,9 +24,23 @@ type BigInt struct {
 }
 
 // Create a BigInt from a string of numbers
-func newBigInt(v string) *BigInt {
+func newBigInt(v string) (*BigInt, error) {
+	if !checkDigits(v) {
+		return nil, errors.New("not a valid big int string")
+	}
 	b := &BigInt{value: v}
-	return b
+	return b, nil
+}
+
+// checkDigits returns true if all values in a string are between 0 and 9
+func checkDigits(s string) bool {
+	for _, char := range s {
+		if char < '0' || char > '9' {
+			// return false at the first non digit
+			return false
+		}
+	}
+	return true
 }
 
 // getValue returns the string of the BigInt
@@ -50,11 +63,11 @@ func (b *BigInt) length() int {
 	return len(b.value)
 }
 
-// compareTo checks if BigInt b is larger, smaller, or equal to BigInt x
+// CompareTo checks if BigInt b is larger, smaller, or equal to BigInt x
 // -1 if b < x
 // 0 if b == x
 // 1 if b > x
-func (b *BigInt) compareTo(x *BigInt) int {
+func (b *BigInt) CompareTo(x *BigInt) int {
 	if b.length() > x.length() {
 		return 1
 	}
@@ -108,7 +121,7 @@ func Reverse(s string) string {
 }
 
 // adds one BigInt value with another
-func (b *BigInt) add(addend *BigInt) {
+func (b *BigInt) Add(addend *BigInt) {
 	// ensure both values are equal length
 	x, y := equalLengths(addend, b)
 
@@ -141,8 +154,8 @@ func (b *BigInt) add(addend *BigInt) {
 }
 
 // subtract one BigInt from another
-func (b *BigInt) subtract(subtrahend *BigInt) {
-	bGreaterSubtrahend := b.compareTo(subtrahend)
+func (b *BigInt) Subtract(subtrahend *BigInt) {
+	bGreaterSubtrahend := b.CompareTo(subtrahend)
 	// Both values are equal. Subtractiong results in zero
 	if (bGreaterSubtrahend == 0) {
 		b.setValue("0")
@@ -186,7 +199,7 @@ func (b *BigInt) subtract(subtrahend *BigInt) {
 }
 
 // multiply one BigInt with another
-func (b *BigInt) multiply(x *BigInt) {
+func (b *BigInt) Multiply(x *BigInt) {
 	xRunes := x.runes()
 	number := b.getValue()
 	b.setValue("0");
@@ -198,9 +211,9 @@ func (b *BigInt) multiply(x *BigInt) {
 		// sb is used to build the product through recursive steps
 		var sb strings.Builder
 		// Use the multiplyByIntHelper to recursively 
-		newB := newBigInt(multiplyByIntHelper(multiplier, number, i, 0, &sb))
+		newB, _ := newBigInt(multiplyByIntHelper(multiplier, number, i, 0, &sb))
 		// Add the previous product to b 
-		b.add(newB)
+		b.Add(newB)
 	}
 }
 
@@ -229,7 +242,7 @@ func multiplyByIntHelper(x int, number string, powerOf10 int, overflow int, sb *
 
 // divideByInt will divide a BigInt by an integer value
 // will lose precision because of integer division
-func (b *BigInt) divideByInt(divisor int) {
+func (b *BigInt) DivideByInt(divisor int) {
 	// cannot divide by zero
 	if (divisor == 0) {
 		log.Fatal("cannot divide by zero")
@@ -270,7 +283,7 @@ BigNumber div(BigNumber other) {
             BigNumber tempNum = new BigNumber(temp);
             int NumbersLeft = num1.length() - temp.length();
             BigNumber MultObject = new BigNumber("1");
-            if (tempNum.compareTo(other) < 0) {
+            if (tempNum.CompareTo(other) < 0) {
                 temp = num1.substring(0, Select+1);
                 tempNum.Number = temp;
                 NumbersLeft--;
@@ -279,7 +292,7 @@ BigNumber div(BigNumber other) {
             do {
                 MultObject.Number = "0";
                 int Index = 0;
-                while (other.mult(MultObject).compareTo(tempNum) < 0) {
+                while (other.mult(MultObject).CompareTo(tempNum) < 0) {
                     Index++;
                     MultObject.Number = Integer.toString(Index);
                 }
@@ -296,7 +309,7 @@ BigNumber div(BigNumber other) {
             }while (NumbersLeft > 0);
             MultObject.Number = "0";
             int Index = 0;
-            while (other.mult(MultObject).compareTo(tempNum) < 0) {
+            while (other.mult(MultObject).CompareTo(tempNum) < 0) {
                 Index++;
                 MultObject.Number = Integer.toString(Index);
             }
@@ -318,25 +331,25 @@ BigNumber div(BigNumber other) {
 
 func main() {
 
-	num := newBigInt("666666666666666666634555555553466")
-	num2 := newBigInt("3333333355555555555555555543333")
+	num, _ := newBigInt("666666666666666666634555555553466")
+	num2, _ := newBigInt("3333333355555555555555555543333")
 
-	num.add(num2)
+	num.Add(num2)
 	fmt.Println(num.value)
 
-	num3 := newBigInt("11111111846846863575110")
-	num4 := newBigInt("760849132368409")
+	num3, _ := newBigInt("11111111846846863575110")
+	num4, _ := newBigInt("760849132368409")
 
-	num3.multiply(num4)
+	num3.Multiply(num4)
 	fmt.Println(num3.value)
 
-	num5 := newBigInt("1000000")
-	num6 := newBigInt("250000")
-	num5.subtract(num6)
+	num5, _ := newBigInt("1000000")
+	num6, _ := newBigInt("250000")
+	num5.Subtract(num6)
 	fmt.Println(num5.value)
 
-	num7 := newBigInt("123456789")
-	num7.divideByInt(17)
+	num7, _ := newBigInt("123456789")
+	num7.DivideByInt(17)
 	fmt.Println(num7.value)
 
 }
