@@ -8,8 +8,34 @@ import (
 	"errors"
 )
 
-/*
+/* ADDITION CASES
 
+B   			X
+900		+	-1000		B is smaller. Subtract B from X. Result is negative
+900		+	1000		B is smaller. Add both values. Result is positive
+-900	+	-1000		B is smaller. Add both values. Result is negative
+-900	+	1000		B is smaller. Subtract B from X. Result is positive
+
+1000	+	-900		B is larger. Subtract X from B. Result is positive
+1000	+	900			B is larger. Add both values. Result is positive
+-1000	+	-900		B is larger. Add both values. Result is negative
+-1000	+	900			B is larger. Subtract X from B. Result is negative
+*/
+
+/* SUBTRACTION CASES
+
+B   			X
+900		-	-1000		B is smaller. Add both values. Result is positive
+900		-	1000		B is smaller. Subtract B from X. Result is negative
+-900	-	-1000		B is smaller. Subtract B from X. Result is positive
+-900	-	1000		B is smaller. Add both values. Result is negative
+
+1000	-	-900		B is larger. Add both values. Result is positive 
+1000	-	900			B is larger. Subtract X from B. Result is positive
+-1000	-	-900		B is larger. Subtract X from B. Result is negative
+-1000	-	900			B is larger. Add both values. Result is negative
+
+/*
 An implementation of BigInt using Go.
 This structure stores large integers as strings essentially an array of digits 0 to 9 representing the larger value.
 Includes methods for comparing and adding two BigInt values.
@@ -19,16 +45,36 @@ TODO:
 	Call subtraction repeatedly breaking before it become negative.
 	The number of iterations is the quotient and the remaining number is the remainder.
 */
+
 type BigInt struct {
 	value string
+	negative bool
 }
 
 // Create a BigInt from a string of numbers
 func newBigInt(v string) (*BigInt, error) {
+
+	// check for a minus sign
+	if v[0] == '-' {
+
+		// remove minus sign
+		newV := v[1:]
+
+		// check string is all digits
+		if !checkDigits(v) {
+			return nil, errors.New("not a valid big int string")
+		}
+
+		b := &BigInt{value: newV, negative: true }
+		return b, nil
+	}
+
+	// check string is all digits
 	if !checkDigits(v) {
 		return nil, errors.New("not a valid big int string")
 	}
-	b := &BigInt{value: v}
+
+	b := &BigInt{value: v, negative: false}
 	return b, nil
 }
 
@@ -63,11 +109,12 @@ func (b *BigInt) length() int {
 	return len(b.value)
 }
 
-// CompareTo checks if BigInt b is larger, smaller, or equal to BigInt x
+// compareValues checks if one string value is larger than another
+// compareValues does not account for positive or negative values
 // -1 if b < x
 // 0 if b == x
 // 1 if b > x
-func (b *BigInt) CompareTo(x *BigInt) int {
+func (b *BigInt) compareValues(x *BigInt) int {
 	if b.length() > x.length() {
 		return 1
 	}
@@ -88,6 +135,81 @@ func (b *BigInt) CompareTo(x *BigInt) int {
 			return -1
 		}
 	}
+	return 0
+}
+
+// CompareTo checks if BigInt b is larger, smaller, or equal to BigInt x
+// CompareTo accounts for positive and negative values
+// -1 if b < x
+// 0 if b == x
+// 1 if b > x
+func (b *BigInt) CompareTo(x *BigInt) int {
+
+	// b is positive x is positive
+	if !b.negative && !x.negative {
+
+		// The longer value is larger (more positive)
+		if b.length() > x.length() {
+			return 1
+		}
+		if b.length() < x.length() {
+			return -1
+		}
+
+		thisRunes := b.runes()
+		xRunes := x.runes()
+
+		// compare digits of strings. Larger value is larger (more positive)
+		for i := 0; i < b.length(); i++ {
+			bInt := int(thisRunes[i] - '0')
+			xInt := int(xRunes[i] - '0')
+			if bInt > xInt {
+				return 1
+			}
+			if bInt < xInt {
+				return -1
+			}
+		}
+		return 0
+	} 
+
+	// b is positive x is negative
+	if !b.negative && x.negative {
+		return 1
+	}
+
+	// b is negative x is negative
+	if b.negative && x.negative {
+		// The longer value is smaller (more negative)
+		if b.length() > x.length() {
+			return -1
+		}
+		if b.length() < x.length() {
+			return 1
+		}
+
+		thisRunes := b.runes()
+		xRunes := x.runes()
+		
+		// compare digits of strings. Larger value is smaller (more negative)
+		for i := 0; i < b.length(); i++ {
+			bInt := int(thisRunes[i] - '0')
+			xInt := int(xRunes[i] - '0')
+			if bInt > xInt {
+				return -1
+			}
+			if bInt < xInt {
+				return 1
+			}
+		}
+		return 0
+	}
+
+	// b is negative x is positive
+	if b.negative && !x.negative {
+		return -1
+	}
+
 	return 0
 }
 
@@ -120,8 +242,7 @@ func Reverse(s string) string {
 	return string(runes)
 }
 
-// adds one BigInt value with another
-func (b *BigInt) Add(addend *BigInt) {
+func (b *BigInt) adder(addend *BigInt) {
 	// ensure both values are equal length
 	x, y := equalLengths(addend, b)
 
@@ -151,17 +272,30 @@ func (b *BigInt) Add(addend *BigInt) {
 	}
 	// Reverse the string to account for append order and add any last carrying
 	b.value = s + Reverse(solution.String())
+	
 }
 
+
+// adds one BigInt value with another
+func (b *BigInt) Add(x *BigInt)  {
+	
+}
+
+
 // subtract one BigInt from another
-func (b *BigInt) Subtract(subtrahend *BigInt) {
-	bGreaterSubtrahend := b.CompareTo(subtrahend)
+func (b *BigInt) Subtract(x *BigInt)  {
+	
+}
+
+
+func (b *BigInt) subtractor(subtrahend *BigInt)  {
+	bGreaterSubtrahend := b.compareValues(subtrahend)
 	// Both values are equal. Subtractiong results in zero
 	if (bGreaterSubtrahend == 0) {
-		b.setValue("0")
+		b.value = "0"
 	// x is greater than b. Subtraction creates a negative value. TODO negative value
 	} else if (bGreaterSubtrahend < 0) {
-		b.setValue("TODO implement negative values")
+		b.value = "TODO implement negative values"
 	// b is greater than x. Subtract x from b
 	} else {
 		// Pad subtrahend with zeros to make each BigInt equal length
@@ -194,15 +328,16 @@ func (b *BigInt) Subtract(subtrahend *BigInt) {
 			solution = solution[0:len(solution)-1]
 		}
 
-		b.setValue(Reverse(solution))
+		result := Reverse(solution)
+		b.value = result
 	}
 }
 
 // multiply one BigInt with another
-func (b *BigInt) Multiply(x *BigInt) {
+func (b *BigInt) Multiply(x *BigInt)  {
 	xRunes := x.runes()
 	number := b.getValue()
-	b.setValue("0");
+	b.value = "0"
 
 	// multiply each digit of x (the multiplier) BigInt with all digits of b BigInt (the multiplicand)
 	for i := 0; i < x.length(); i++ {
@@ -242,7 +377,7 @@ func multiplyByIntHelper(x int, number string, powerOf10 int, overflow int, sb *
 
 // divideByInt will divide a BigInt by an integer value
 // will lose precision because of integer division
-func (b *BigInt) DivideByInt(divisor int) {
+func (b *BigInt) DivideByInt(divisor int) string {
 	// cannot divide by zero
 	if (divisor == 0) {
 		log.Fatal("cannot divide by zero")
@@ -268,8 +403,10 @@ func (b *BigInt) DivideByInt(divisor int) {
 			solution = solution[1:]
 		}
 
-		b.setValue(solution)
+		return solution
 	}
+
+	return "0"
 }
 
 /**************************
@@ -331,25 +468,6 @@ BigNumber div(BigNumber other) {
 
 func main() {
 
-	num, _ := newBigInt("666666666666666666634555555553466")
-	num2, _ := newBigInt("3333333355555555555555555543333")
 
-	num.Add(num2)
-	fmt.Println(num.value)
-
-	num3, _ := newBigInt("11111111846846863575110")
-	num4, _ := newBigInt("760849132368409")
-
-	num3.Multiply(num4)
-	fmt.Println(num3.value)
-
-	num5, _ := newBigInt("1000000")
-	num6, _ := newBigInt("250000")
-	num5.Subtract(num6)
-	fmt.Println(num5.value)
-
-	num7, _ := newBigInt("123456789")
-	num7.DivideByInt(17)
-	fmt.Println(num7.value)
 
 }
