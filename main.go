@@ -8,47 +8,15 @@ import (
 	"errors"
 )
 
-/* ADDITION CASES
-
-B   			X
-900		+	-1000		B is smaller. Subtract B from X. Result is negative
-900		+	1000		B is smaller. Add both values. Result is positive
--900	+	-1000		B is smaller. Add both values. Result is negative
--900	+	1000		B is smaller. Subtract B from X. Result is positive
-
-1000	+	-900		B is larger. Subtract X from B. Result is positive
-1000	+	900			B is larger. Add both values. Result is positive
--1000	+	-900		B is larger. Add both values. Result is negative
--1000	+	900			B is larger. Subtract X from B. Result is negative
-
-1000 	+ 	1000		B and X are the same. Add both values. Result is positive
-1000 	+ 	-1000	    B and X are the same. Return 0
--1000 	+	1000		B and X are the saem. Return 0
--1000	+ 	-1000		B and X are the same. Add both values. Result is negative
-*/
-
-/* SUBTRACTION CASES
-
-B   			X
-900		-	-1000		B is smaller. Add both values. Result is positive
-900		-	1000		B is smaller. Subtract B from X. Result is negative
--900	-	-1000		B is smaller. Subtract B from X. Result is positive
--900	-	1000		B is smaller. Add both values. Result is negative
-
-1000	-	-900		B is larger. Add both values. Result is positive 
-1000	-	900			B is larger. Subtract X from B. Result is positive
--1000	-	-900		B is larger. Subtract X from B. Result is negative
--1000	-	900			B is larger. Add both values. Result is negative
-
-1000 	- 	1000		B and X are the same. Return 0
-1000 	- 	-1000	    B and X are the same. Add both values. Result is positive
--1000 	-	1000		B and X are the saem. Add both values. Result is negative
--1000	- 	-1000		B and X are the same. Return 0
-
 /*
 An implementation of BigInt using Go.
 This structure stores large integers as strings essentially an array of digits 0 to 9 representing the larger value.
-Includes methods for comparing and adding two BigInt values.
+Includes methods for:
+	* comparing, adding, and subtracting two BigInt values.
+	* dividing a BigInt value by an integer value
+	* multiplying two BigInt values together
+	* negating a BigInt 
+	* creating a string with the sign of a number prepended
 
 TODO:
  Division by BigInt (Simple, non-efficent method)
@@ -90,11 +58,16 @@ func newBigInt(v string) (*BigInt, error) {
 
 // ToString returns a string of the BigInt value
 // appends a minus sign for negative values
-func (b *BigInt) ToString() string{
+func (b *BigInt) ToString() string {
 	if b.negative {
 		return fmt.Sprintf("-%s", b.value)
 	} 
 	return b.value
+}
+
+// Negate changes the sign of a BigInt
+func (b *BigInt) Negate() {
+	b.negative = !b.negative
 }
 
 // checkDigits returns true if all values in a string are between 0 and 9
@@ -261,6 +234,7 @@ func Reverse(s string) string {
 	return string(runes)
 }
 
+// adder is a helper function for adding two BigInt values together
 func (b *BigInt) adder(addend *BigInt) {
 	// ensure both values are equal length
 	x, y := equalLengths(addend, b)
@@ -294,6 +268,24 @@ func (b *BigInt) adder(addend *BigInt) {
 	
 }
 
+/* ADDITION CASES
+
+B   			X
+900		+	-1000		B is smaller. Subtract B from X. Result is negative
+900		+	1000		B is smaller. Add both values. Result is positive
+-900	+	-1000		B is smaller. Add both values. Result is negative
+-900	+	1000		B is smaller. Subtract B from X. Result is positive
+
+1000	+	-900		B is larger. Subtract X from B. Result is positive
+1000	+	900			B is larger. Add both values. Result is positive
+-1000	+	-900		B is larger. Add both values. Result is negative
+-1000	+	900			B is larger. Subtract X from B. Result is negative
+
+1000 	+ 	1000		B and X are the same. Add both values. Result is positive
+1000 	+ 	-1000	    B and X are the same. Return 0
+-1000 	+	1000		B and X are the saem. Return 0
+-1000	+ 	-1000		B and X are the same. Add both values. Result is negative
+*/
 
 // adds one BigInt value with another
 func (b *BigInt) Add(x *BigInt)  {
@@ -397,29 +389,60 @@ func (b *BigInt) Add(x *BigInt)  {
 	}
 }
 
+/* SUBTRACTION CASES
+B   			X
+900		-	-1000		B is smaller. Add both values. Result is positive
+900		-	1000		B is smaller. Subtract B from X. Result is negative
+-900	-	-1000		B is smaller. Subtract B from X. Result is positive
+-900	-	1000		B is smaller. Add both values. Result is negative
 
+1000	-	-900		B is larger. Add both values. Result is positive 
+1000	-	900			B is larger. Subtract X from B. Result is positive
+-1000	-	-900		B is larger. Subtract X from B. Result is negative
+-1000	-	900			B is larger. Add both values. Result is negative
+
+1000 	- 	1000		B and X are the same. Return 0
+1000 	- 	-1000	    B and X are the same. Add both values. Result is positive
+-1000 	-	1000		B and X are the same. Add both values. Result is negative
+-1000	- 	-1000		B and X are the same. Return 0
+
+*/
 // subtract one BigInt from another
 func (b *BigInt) Subtract(x *BigInt)  {
 	// b is smaller
 	if b.compareValues(x) == -1 {
 		// b is positive x is negative
 		if !b.negative && x.negative {
-
+			b.adder(x)
+			b.negative = false
+			return
 		}
 
 		// b is positive x is positive
 		if !b.negative && !x.negative {
-
+			xValue := x.value
+			x.subtractor(b)
+			b.value = x.value
+			x.value = xValue
+			b.negative = true
+			return
 		}
 
 		// b is negative x is negative
 		if b.negative && x.negative {
-
+			xValue := x.value
+			x.subtractor(b)
+			b.value = x.value
+			x.value = xValue
+			b.negative = false
+			return
 		}
 
 		// b is negative x is positive
 		if b.negative && !x.negative {
-
+			b.adder(x)
+			b.negative = true
+			return
 		}
 	}
 
@@ -427,22 +450,30 @@ func (b *BigInt) Subtract(x *BigInt)  {
 	if b.compareValues(x) == 1 {
 		// b is positive x is negative
 		if !b.negative && x.negative {
-
+			b.adder(x)
+			b.negative = false
+			return
 		}
 
 		// b is positive x is positive
 		if !b.negative && !x.negative {
-
+			b.subtractor(x)
+			b.negative = false
+			return
 		}
 
 		// b is negative x is negative
 		if b.negative && x.negative {
-
+			b.subtractor(x)
+			b.negative = true
+			return
 		}
 
 		// b is negative x is positive
 		if b.negative && !x.negative {
-			
+			b.adder(x) 
+			b.negative = true
+			return
 		}
 	}
 
@@ -450,27 +481,35 @@ func (b *BigInt) Subtract(x *BigInt)  {
 	if b.compareValues(x) == 0 {
 		// b is positive x is positive
 		if !b.negative && !x.negative {
-
+			b.value = "0"
+			b.negative = false
+			return
 		}
 
 		// b is positive x is negative
 		if !b.negative && x.negative {
-
+			b.adder(x)
+			b.negative = false
+			return
 		}
 
 		// b is negative x is positive
 		if b.negative && !x.negative {
-
+			b.adder(x)
+			b.negative = true
+			return
 		}
 
 		// b is negative x is negative
 		if b.negative && x.negative {
-			
+			b.value = "0"
+			b.negative = false
+			return
 		}
 	}
 }
 
-
+// subtractor is a helper method for subtracting two big int
 func (b *BigInt) subtractor(subtrahend *BigInt)  {
 	bGreaterSubtrahend := b.compareValues(subtrahend)
 	// Both values are equal. Subtractiong results in zero
@@ -665,6 +704,20 @@ func main() {
 	num1.Add(num2)
 	fmt.Println(num1.ToString())
 
+
+	num5, _ := newBigInt("-900")
+	num6, _ := newBigInt("-1000")
+
+	num5.Subtract(num6)
+	fmt.Println(num5.ToString())
+	fmt.Println(num6.ToString())
 	
+	num7, _ := newBigInt("500")
+	fmt.Println(num7.ToString())
+	num7.Negate()
+	fmt.Println(num7.ToString())
+
+
+	fmt.Println(num5.CompareTo(num3))
 
 }
