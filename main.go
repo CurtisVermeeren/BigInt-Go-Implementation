@@ -17,19 +17,17 @@ Includes methods for:
 	* multiplying two BigInt values together
 	* negating a BigInt 
 	* creating a string with the sign of a number prepended
-
-TODO:
- Division by BigInt (Simple, non-efficent method)
-	Call subtraction repeatedly breaking before it become negative.
-	The number of iterations is the quotient and the remaining number is the remainder.
+	* divide two BigInt values to get the quotient and remainder
 */
 
+// BigInt type holds the value as a string and a boolean to track if the integer is negative (true) or positive (false)
 type BigInt struct {
 	value string
 	negative bool
 }
 
 // Create a BigInt from a string of numbers
+// returns the BigInt or an error when the input string is invalid
 func newBigInt(v string) (*BigInt, error) {
 
 	// check for a minus sign
@@ -118,8 +116,9 @@ func (b *BigInt) compareValues(x *BigInt) int {
 	xRunes := x.runes()
 
 	for i := 0; i < b.length(); i++ {
-		xInt := int(thisRunes[i] - '0')
-		bInt := int(xRunes[i] - '0')
+		bInt := int(thisRunes[i] - '0')
+		xInt := int(xRunes[i] - '0')
+		
 		if bInt > xInt {
 			return 1
 		}
@@ -570,8 +569,18 @@ func (b *BigInt) Multiply(x *BigInt)  {
 		// Use the multiplyByIntHelper to recursively 
 		newB, _ := newBigInt(multiplyByIntHelper(multiplier, number, i, 0, &sb))
 		// Add the previous product to b 
-		b.Add(newB)
+		b.adder(newB)
 	}
+
+	// Find the resulting sign for b
+	// both values are negative or positive results in a positve
+	if b.negative == x.negative {
+		b.negative = false
+	} else {
+		// opposite signs of b and x results in a negative
+		b.negative = true
+	}
+
 }
 
 // multiplyByInt is a helper method for multiplying two BigInt 
@@ -599,7 +608,7 @@ func multiplyByIntHelper(x int, number string, powerOf10 int, overflow int, sb *
 
 // divideByInt will divide a BigInt by an integer value
 // will lose precision because of integer division
-func (b *BigInt) DivideByInt(divisor int) string {
+func (b *BigInt) DivideByInt(divisor int)  {
 	// cannot divide by zero
 	if (divisor == 0) {
 		log.Fatal("cannot divide by zero")
@@ -625,68 +634,56 @@ func (b *BigInt) DivideByInt(divisor int) string {
 			solution = solution[1:]
 		}
 
-		return solution
+		b.value = solution		
 	}
 
-	return "0"
 }
 
-/**************************
+// Divide a BigInt value by another b / x
+// Integer division tells us how many times x fits into b
+// returns a string of any remainder.
+func (b *BigInt) Divide(x *BigInt) string {
 
-BigNumber div(BigNumber other) {
-            String result = "";
-            String num1 = this.Number;
-            String num2 = other.Number;
-            int Select = num2.length();
-            String temp = num1.substring(0, Select);
-            BigNumber tempNum = new BigNumber(temp);
-            int NumbersLeft = num1.length() - temp.length();
-            BigNumber MultObject = new BigNumber("1");
-            if (tempNum.CompareTo(other) < 0) {
-                temp = num1.substring(0, Select+1);
-                tempNum.Number = temp;
-                NumbersLeft--;
-                Select++;
-            }
-            do {
-                MultObject.Number = "0";
-                int Index = 0;
-                while (other.mult(MultObject).CompareTo(tempNum) < 0) {
-                    Index++;
-                    MultObject.Number = Integer.toString(Index);
-                }
-                Index--;
-                MultObject.Number = Integer.toString(Index);
-                String Carry = tempNum.sub(other.mult(MultObject)).Number;
-                if (NumbersLeft > 0) {
-                    Select++;
-                    Carry += num1.charAt(Select - 1);
-                    NumbersLeft--;
-                }
-                result += Index;
-                tempNum.Number = Carry;
-            }while (NumbersLeft > 0);
-            MultObject.Number = "0";
-            int Index = 0;
-            while (other.mult(MultObject).CompareTo(tempNum) < 0) {
-                Index++;
-                MultObject.Number = Integer.toString(Index);
-            }
-            Index--;
-            MultObject.Number = Integer.toString(Index);
-            String Carry = tempNum.sub(other.mult(MultObject)).Number;
-            if (NumbersLeft > 0) {
-                Select++;
-                Carry += num1.charAt(Select - 1);
-                NumbersLeft--;
-            }
-            result += Index;
-            tempNum.Number = Carry;
-                BigNumber Big = new BigNumber(result);
-                return Big;
-            }
+	remainder := "0"
+	
+	if b.compareValues(x) == 1 {
+	// b is larger
+		// subtractions tracks the number of times x fits into b
+		subtractions := 0
+		// While the numerator is larger or equal subtract the denominator
+		for ; b.compareValues(x) >= 0;  {
+			b.subtractor(x)
+			subtractions++
+		}
+		// remainder is the remainder value of b after subtractions
+		remainder = b.value
+		
+		// The result of integer division is the number of times x fits into b
+		b.value = strconv.Itoa(subtractions)
+		
+	} else if b.compareValues(x) == -1 {
+	// b is smaller	EX 10 / 100 = 0, Remainder 10
+		remainder = b.value
+		b.value = "0"
+		
+	} else if b.compareValues(x) == 0 {
+	// b and x are equal 10 / 10 = 1, Remainder 0
+		b.value = "1"
+	}
 
-*/
+	// Find the resulting sign for b
+	// both values are negative or positive results in a positve
+	if b.negative == x.negative {
+		b.negative = false
+	} else {
+		// opposite signs of b and x results in a negative
+		b.negative = true
+	}
+
+	return remainder 
+}
+
+
 
 func main() {
 
@@ -704,7 +701,6 @@ func main() {
 	num1.Add(num2)
 	fmt.Println(num1.ToString())
 
-
 	num5, _ := newBigInt("-900")
 	num6, _ := newBigInt("-1000")
 
@@ -717,7 +713,24 @@ func main() {
 	num7.Negate()
 	fmt.Println(num7.ToString())
 
-
 	fmt.Println(num5.CompareTo(num3))
 
+	num8, _ := newBigInt("1000")
+	num8.DivideByInt(10)
+	fmt.Println(num8.ToString())
+
+	num9, _ := newBigInt("725")
+	num10, _ := newBigInt("-725")
+	result := num9.CompareTo(num10)
+	fmt.Println(result)
+
+	num11, _ := newBigInt("-10")
+	num12, _ := newBigInt("-10")
+	num11.Multiply(num12)
+	fmt.Println(num11.ToString())
+
+	num13, _ := newBigInt("1000000")
+	num14, _ := newBigInt("1120")
+	remainder := num13.Divide(num14)
+	fmt.Println("Divide:", num13.ToString(), "Remainder", remainder)
 }
