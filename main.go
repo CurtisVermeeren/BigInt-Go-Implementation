@@ -224,8 +224,8 @@ func equalLengths(x *BigInt, y *BigInt) (string, string) {
 	return xVal, yVal
 }
 
-// Reverse inverts the order of runes in a string
-func Reverse(s string) string {
+// reverse inverts the order of runes in a string
+func reverse(s string) string {
 	runes := []rune(s)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
@@ -263,7 +263,7 @@ func (b *BigInt) adder(addend *BigInt) {
 		s = ""
 	}
 	// Reverse the string to account for append order and add any last carrying
-	b.value = s + Reverse(solution.String())
+	b.value = s + reverse(solution.String())
 	
 }
 
@@ -549,7 +549,7 @@ func (b *BigInt) subtractor(subtrahend *BigInt)  {
 			solution = solution[0:len(solution)-1]
 		}
 
-		result := Reverse(solution)
+		result := reverse(solution)
 		b.value = result
 	}
 }
@@ -592,7 +592,7 @@ func multiplyByIntHelper(x int, number string, powerOf10 int, overflow int, sb *
 		if overflow == 0 {
 			s = ""
 		}
-		return s + Reverse(sb.String()) + strings.Repeat("0", powerOf10)
+		return s + reverse(sb.String()) + strings.Repeat("0", powerOf10)
 	}
 	// get the multiplicant from the remaining number
 	multiplicand := int(number[len(number) - 1] - '0')
