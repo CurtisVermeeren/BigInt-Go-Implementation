@@ -28,7 +28,7 @@ type BigInt struct {
 
 // Create a BigInt from a string of numbers
 // returns the BigInt or an error when the input string is invalid
-func newBigInt(v string) (*BigInt, error) {
+func NewBigInt(v string) (*BigInt, error) {
 
 	// check for a minus sign
 	if v[0] == '-' {
@@ -267,26 +267,7 @@ func (b *BigInt) adder(addend *BigInt) {
 	
 }
 
-/* ADDITION CASES
-
-B   			X
-900		+	-1000		B is smaller. Subtract B from X. Result is negative
-900		+	1000		B is smaller. Add both values. Result is positive
--900	+	-1000		B is smaller. Add both values. Result is negative
--900	+	1000		B is smaller. Subtract B from X. Result is positive
-
-1000	+	-900		B is larger. Subtract X from B. Result is positive
-1000	+	900			B is larger. Add both values. Result is positive
--1000	+	-900		B is larger. Add both values. Result is negative
--1000	+	900			B is larger. Subtract X from B. Result is negative
-
-1000 	+ 	1000		B and X are the same. Add both values. Result is positive
-1000 	+ 	-1000	    B and X are the same. Return 0
--1000 	+	1000		B and X are the saem. Return 0
--1000	+ 	-1000		B and X are the same. Add both values. Result is negative
-*/
-
-// adds one BigInt value with another
+// Add one BigInt value with another
 func (b *BigInt) Add(x *BigInt)  {
 
 	// b is smaller
@@ -388,25 +369,8 @@ func (b *BigInt) Add(x *BigInt)  {
 	}
 }
 
-/* SUBTRACTION CASES
-B   			X
-900		-	-1000		B is smaller. Add both values. Result is positive
-900		-	1000		B is smaller. Subtract B from X. Result is negative
--900	-	-1000		B is smaller. Subtract B from X. Result is positive
--900	-	1000		B is smaller. Add both values. Result is negative
 
-1000	-	-900		B is larger. Add both values. Result is positive 
-1000	-	900			B is larger. Subtract X from B. Result is positive
--1000	-	-900		B is larger. Subtract X from B. Result is negative
--1000	-	900			B is larger. Add both values. Result is negative
-
-1000 	- 	1000		B and X are the same. Return 0
-1000 	- 	-1000	    B and X are the same. Add both values. Result is positive
--1000 	-	1000		B and X are the same. Add both values. Result is negative
--1000	- 	-1000		B and X are the same. Return 0
-
-*/
-// subtract one BigInt from another
+// Subtract one BigInt from another
 func (b *BigInt) Subtract(x *BigInt)  {
 	// b is smaller
 	if b.compareValues(x) == -1 {
@@ -510,20 +474,13 @@ func (b *BigInt) Subtract(x *BigInt)  {
 
 // subtractor is a helper method for subtracting two big int
 func (b *BigInt) subtractor(subtrahend *BigInt)  {
-	bGreaterSubtrahend := b.compareValues(subtrahend)
-	// Both values are equal. Subtractiong results in zero
-	if (bGreaterSubtrahend == 0) {
-		b.value = "0"
-	// x is greater than b. Subtraction creates a negative value. TODO negative value
-	} else if (bGreaterSubtrahend < 0) {
-		b.value = "TODO implement negative values"
-	// b is greater than x. Subtract x from b
-	} else {
 		// Pad subtrahend with zeros to make each BigInt equal length
 		x, y := equalLengths(subtrahend, b)
 		overflow := 0
+		
 		// sb holds the final value
 		var sb strings.Builder
+		
 		// work from right to left along the subtrahend (x)
 		for i := len(x)-1; i >= 0; i-- {
 			// Get values of subtrahend and minuend
@@ -567,7 +524,7 @@ func (b *BigInt) Multiply(x *BigInt)  {
 		// sb is used to build the product through recursive steps
 		var sb strings.Builder
 		// Use the multiplyByIntHelper to recursively 
-		newB, _ := newBigInt(multiplyByIntHelper(multiplier, number, i, 0, &sb))
+		newB, _ := NewBigInt(multiplyByIntHelper(multiplier, number, i, 0, &sb))
 		// Add the previous product to b 
 		b.adder(newB)
 	}
@@ -687,12 +644,12 @@ func (b *BigInt) Divide(x *BigInt) string {
 
 func main() {
 
-	num1, _ := newBigInt("0")
-	num2, _ := newBigInt("-932423400")
+	num1, _ := NewBigInt("0")
+	num2, _ := NewBigInt("-932423400")
 	
 
-	num3, _ := newBigInt("10003")
-	num4, _ := newBigInt("-1000")
+	num3, _ := NewBigInt("10003")
+	num4, _ := NewBigInt("-1000")
 
 
 	num3.Add(num4)
@@ -701,36 +658,36 @@ func main() {
 	num1.Add(num2)
 	fmt.Println(num1.ToString())
 
-	num5, _ := newBigInt("-900")
-	num6, _ := newBigInt("-1000")
+	num5, _ := NewBigInt("-900")
+	num6, _ := NewBigInt("-1000")
 
 	num5.Subtract(num6)
 	fmt.Println(num5.ToString())
 	fmt.Println(num6.ToString())
 	
-	num7, _ := newBigInt("500")
+	num7, _ := NewBigInt("500")
 	fmt.Println(num7.ToString())
 	num7.Negate()
 	fmt.Println(num7.ToString())
 
 	fmt.Println(num5.CompareTo(num3))
 
-	num8, _ := newBigInt("1000")
+	num8, _ := NewBigInt("1000")
 	num8.DivideByInt(10)
 	fmt.Println(num8.ToString())
 
-	num9, _ := newBigInt("725")
-	num10, _ := newBigInt("-725")
+	num9, _ := NewBigInt("725")
+	num10, _ := NewBigInt("-725")
 	result := num9.CompareTo(num10)
 	fmt.Println(result)
 
-	num11, _ := newBigInt("-10")
-	num12, _ := newBigInt("-10")
+	num11, _ := NewBigInt("-10")
+	num12, _ := NewBigInt("-10")
 	num11.Multiply(num12)
 	fmt.Println(num11.ToString())
 
-	num13, _ := newBigInt("1000000")
-	num14, _ := newBigInt("1120")
+	num13, _ := NewBigInt("1000000")
+	num14, _ := NewBigInt("1120")
 	remainder := num13.Divide(num14)
 	fmt.Println("Divide:", num13.ToString(), "Remainder", remainder)
 }

@@ -1,10 +1,15 @@
 # Go BigInt
 
-A BigInt implementation written in Go. BigInt values are stored as strings in this implementation. A boolean flag called negative is used to indicate if a value is positive or negative.
+A BigInt implementation written in Go as practice. 
+BigInt values are stored as strings in this implementation. 
+A boolean flag called negative is used to indicate if a value is positive or negative.
 
-### Methods
+To create a new BigInt use `NewBigInt(v string)` this method creates a new BigInt object from a string of numbers. It will check that the v string is a valid input.
+Create values with a string like `"1234054"` to mark a new value as negative prepend a dash `"-5009054"`, This will set `BigInt.negative` to true. 
 
-`newBigInt(v string)` This method creates a new BigInt object from a string of numbers. It will error check that the v string is a valid input.
+### Methods called on BigInt b
+
+These methods are called on a BigInt object called b in this example. The value of b is altered depending on the operation. 
 
 `ToString()` Return a string of the BigInt with a minus sign appended for negative values.
 
